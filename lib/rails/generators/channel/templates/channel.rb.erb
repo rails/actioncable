@@ -1,0 +1,11 @@
+<% module_namespacing do -%>
+class <%= channel_class %> < ApplicationCable::Channel
+  def subscribed
+    # Do something
+  end
+
+  def unsubscribed
+    # Do something
+  end
+end
+<% end -%>

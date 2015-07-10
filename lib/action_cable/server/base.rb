@@ -1,3 +1,5 @@
+require 'singleton'
+
 module ActionCable
   module Server
     # A singleton ActionCable::Server instance is available via ActionCable.server. It's used by the rack process that starts the cable server, but
@@ -5,6 +7,7 @@ module ActionCable
     #
     # Also, this is the server instance used for broadcasting. See Broadcasting for details.
     class Base
+      include Singleton
       include ActionCable::Server::Broadcasting
       include ActionCable::Server::Connections
 

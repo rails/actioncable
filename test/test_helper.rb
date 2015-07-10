@@ -6,14 +6,18 @@ require "minitest/autorun"
 Bundler.setup
 Bundler.require :default, :test
 
+require 'celluloid/test'
 require 'puma'
 require 'rails'
 require 'action_cable'
+require 'redis'
 
 module ApplicationCable
-  class Connection
+  class Connection < ActionCable::Connection::Base
   end
 end
+
+Rails.logger = ActiveSupport::TaggedLogging.new(Logger.new(STDOUT))
 
 ActionCable::Server::Configuration.redis_path = Pathname.new('./test/redis.yml')
 ActionCable::Server::Configuration.channels_path = Pathname.new('./test/fixtures/channels')
@@ -27,6 +31,8 @@ class ActionCableTest < ActiveSupport::TestCase
   teardown :stop_puma_server
 
   def start_puma_server
+    Celluloid.shutdown
+    Celluloid.boot
     events = Puma::Events.new(StringIO.new, StringIO.new)
     binder = Puma::Binder.new(events)
     binder.parse(["tcp://0.0.0.0:#{PORT}"], self)

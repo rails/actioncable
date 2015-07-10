@@ -1,6 +1,5 @@
 require "rubygems"
 require "bundler"
-
 gem 'minitest'
 require "minitest/autorun"
 
@@ -8,8 +7,17 @@ Bundler.setup
 Bundler.require :default, :test
 
 require 'puma'
-
+require 'rails'
 require 'action_cable'
+
+module ApplicationCable
+  class Connection
+  end
+end
+
+ActionCable::Server::Configuration.redis_path = Pathname.new('./test/redis.yml')
+ActionCable::Server::Configuration.channels_path = Pathname.new('./test/fixtures/channels')
+
 ActiveSupport.test_order = :sorted
 
 class ActionCableTest < ActiveSupport::TestCase

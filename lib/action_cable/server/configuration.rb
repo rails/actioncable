@@ -5,7 +5,14 @@ module ActionCable
     class Configuration
       attr_accessor :logger, :log_tags
       attr_accessor :connection_class, :worker_pool_size
-      attr_accessor :redis_path, :channels_path
+
+      mattr_accessor :redis_path do
+        Rails.root.try :join, 'config/redis/cable.yml'
+      end
+
+      mattr_accessor :channels_path do
+        Rails.root.try :join, 'app/channels'
+      end
 
       def initialize
         @logger   = Rails.logger
@@ -13,10 +20,8 @@ module ActionCable
 
         @connection_class  = ApplicationCable::Connection
         @worker_pool_size  = 100
-
-        @redis_path    = Rails.root.join('config/redis/cable.yml')
-        @channels_path = Rails.root.join('app/channels')
       end
+
 
       def channel_paths
         @channels ||= Dir["#{channels_path}/**/*_channel.rb"]

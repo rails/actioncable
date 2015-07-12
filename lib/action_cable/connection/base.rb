@@ -10,7 +10,7 @@ module ActionCable
     #   module ApplicationCable
     #     class Connection < ActionCable::Connection::Base
     #       identified_by :current_user
-    #   
+    #
     #       def connect
     #         self.current_user = find_verified_user
     #         logger.add_tags current_user.name
@@ -19,7 +19,7 @@ module ActionCable
     #       def disconnect
     #         # Any cleanup work needed when the cable connection is cut.
     #       end
-    #   
+    #
     #       protected
     #         def find_verified_user
     #           if current_user = User.find_by_identity cookies.signed[:identity_id]
@@ -73,14 +73,14 @@ module ActionCable
           websocket.on(:open)    { |event| send_async :on_open   }
           websocket.on(:message) { |event| on_message event.data }
           websocket.on(:close)   { |event| send_async :on_close  }
-          
+
           respond_to_successful_request
         else
           respond_to_invalid_request
         end
       end
 
-      # Data received over the cable is handled by this method. It's expected that everything inbound is encoded with JSON. 
+      # Data received over the cable is handled by this method. It's expected that everything inbound is encoded with JSON.
       # The data is routed to the proper channel that the connection has subscribed to.
       def receive(data_in_json)
         if websocket.alive?
@@ -117,7 +117,7 @@ module ActionCable
       protected
         # The request that initiated the websocket connection is available here. This gives access to the environment, cookies, etc.
         def request
-          @request ||= ActionDispatch::Request.new(Rails.application.env_config.merge(env))
+          @request ||= ActionDispatch::Request.new((Rails.application.try(:env_config) || {}).merge(env))
         end
 
         # The cookies of the request that initiated the websocket connection. Useful for performing authorization checks.
@@ -172,7 +172,7 @@ module ActionCable
 
         # Tags are declared in the server but computed in the connection. This allows us per-connection tailored tags.
         def new_tagged_logger
-          TaggedLoggerProxy.new server.logger, 
+          TaggedLoggerProxy.new server.logger,
             tags: server.config.log_tags.map { |tag| tag.respond_to?(:call) ? tag.call(request) : tag.to_s.camelize }
         end
 

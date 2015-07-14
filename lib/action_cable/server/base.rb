@@ -1,3 +1,6 @@
+require 'action_cable/adapters/redis/pubsub'
+require 'action_cable/adapters/rabbitmq/pubsub'
+
 module ActionCable
   module Server
     # A singleton ActionCable::Server instance is available via ActionCable.server. It's used by the rack process that starts the cable server, but
@@ -39,20 +42,13 @@ module ActionCable
         end
       end
 
-      # The redis pubsub adapter used for all streams/broadcasting.
-      def pubsub
-        @pubsub ||= redis.pubsub
+      def adapter
+        @adapter ||= ActionCable::Adapters::RabbitMQ::Pubsub.new(config)
       end
 
-      # The EventMachine Redis instance used by the pubsub adapter.
-      def redis
-        @redis ||= EM::Hiredis.connect(config.redis[:url]).tap do |redis|
-          redis.on(:reconnect_failed) do
-            logger.info "[ActionCable] Redis reconnect failed."
-            # logger.info "[ActionCable] Redis reconnected. Closing all the open connections."
-            # @connections.map &:close
-          end            
-        end
+      # The redis pubsub adapter used for all streams/broadcasting.
+      def pubsub
+        @pubsub ||= adapter.pubsub
       end
 
       # All the identifiers applied to the connection class associated with this server.

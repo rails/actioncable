@@ -5,7 +5,7 @@ module ActionCable
     class Configuration
       attr_accessor :logger, :log_tags
       attr_accessor :connection_class, :worker_pool_size
-      attr_accessor :redis_path, :channels_path
+      attr_accessor :redis_path, :rabbitmq_path, :channels_path
 
       def initialize
         @logger   = Rails.logger
@@ -15,6 +15,7 @@ module ActionCable
         @worker_pool_size  = 100
 
         @redis_path    = Rails.root.join('config/redis/cable.yml')
+        @rabbitmq_path = Rails.root.join('config/rabbitmq/cable.yml')
         @channels_path = Rails.root.join('app/channels')
       end
 
@@ -30,6 +31,10 @@ module ActionCable
 
       def redis
         @redis ||= config_for(redis_path).with_indifferent_access
+      end
+
+      def rabbitmq
+        @rabbitmq ||= config_for(rabbitmq_path).with_indifferent_access
       end
 
       private

@@ -1,3 +1,6 @@
+require 'action_cable/adapters/redis/broadcaster'
+require 'action_cable/adapters/rabbitmq/broadcaster'
+
 module ActionCable
   module Server
     # Broadcasting is how other parts of your application can send messages to the channel subscribers. As explained in Channel, most of the time, these
@@ -29,10 +32,10 @@ module ActionCable
         Broadcaster.new(self, broadcasting)
       end
 
-      # The redis instance used for broadcasting. Not intended for direct user use.
-      def broadcasting_redis
-        @broadcasting_redis ||= Redis.new(config.redis)
-      end      
+      def broadcaster
+        @broadcaster ||= ActionCable::Adapters::RabbitMQ::Broadcaster.new(config)
+        @broadcaster.broadcaster
+      end
 
       private
         class Broadcaster
@@ -44,7 +47,7 @@ module ActionCable
 
           def broadcast(message)
             server.logger.info "[ActionCable] Broadcasting to #{broadcasting}: #{message}"
-            server.broadcasting_redis.publish broadcasting, message.to_json
+            server.broadcaster.publish broadcasting, message.to_json
           end
         end
     end

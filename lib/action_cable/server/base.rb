@@ -6,6 +6,7 @@ module ActionCable
     # Also, this is the server instance used for broadcasting. See Broadcasting for details.
     class Base
       include ActionCable::Server::Broadcasting
+      include ActionCable::Server::Pubsub
       include ActionCable::Server::Connections
 
       cattr_accessor(:config, instance_accessor: true) { ActionCable::Server::Configuration.new }
@@ -36,22 +37,6 @@ module ActionCable
         @channel_classes ||= begin
           config.channel_paths.each { |channel_path| require channel_path }
           config.channel_class_names.collect { |name| name.constantize }
-        end
-      end
-
-      # The redis pubsub adapter used for all streams/broadcasting.
-      def pubsub
-        @pubsub ||= redis.pubsub
-      end
-
-      # The EventMachine Redis instance used by the pubsub adapter.
-      def redis
-        @redis ||= EM::Hiredis.connect(config.redis[:url]).tap do |redis|
-          redis.on(:reconnect_failed) do
-            logger.info "[ActionCable] Redis reconnect failed."
-            # logger.info "[ActionCable] Redis reconnected. Closing all the open connections."
-            # @connections.map &:close
-          end            
         end
       end
 

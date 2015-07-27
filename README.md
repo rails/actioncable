@@ -206,15 +206,19 @@ See the [rails/actioncable-examples](http://github.com/rails/actioncable-example
 ## Configuration
 
 The only must-configure part of Action Cable is the Redis connection. By default, `ActionCable::Server::Base` will look for a configuration
-file in `Rails.root.join('config/redis/cable.yml')`. The file must follow the following format:
+file in `Rails.root.join('config/actioncable.yml')`. The file must follow the following format:
 
 ```yaml
+default: &default
+  :adapter: redis
 production: &production
+  <<: *default
   :url: redis://10.10.3.153:6381
   :host: 10.10.3.153
   :port: 6381
   :timeout: 1
 development: &development
+  <<: *default
   :url: redis://localhost:6379
   :host: localhost
   :port: 6379

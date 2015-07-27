@@ -1,3 +1,5 @@
+require 'action_cable/adapters/broadcaster'
+
 module ActionCable
   module Server
     # Broadcasting is how other parts of your application can send messages to the channel subscribers. As explained in Channel, most of the time, these
@@ -20,33 +22,14 @@ module ActionCable
     module Broadcasting
       # Broadcast a hash directly to a named <tt>broadcasting</tt>. It'll automatically be JSON encoded.
       def broadcast(broadcasting, message)
-        broadcaster_for(broadcasting).broadcast(message)
+        broadcaster.broadcast(broadcasting, message)
       end
-
-      # Returns a broadcaster for a named <tt>broadcasting</tt> that can be reused. Useful when you have a object that
-      # may need multiple spots to transmit to a specific broadcasting over and over.
-      def broadcaster_for(broadcasting)
-        Broadcaster.new(self, broadcasting)
-      end
-
-      # The redis instance used for broadcasting. Not intended for direct user use.
-      def broadcasting_redis
-        @broadcasting_redis ||= Redis.new(config.redis)
-      end      
 
       private
-        class Broadcaster
-          attr_reader :server, :broadcasting
-
-          def initialize(server, broadcasting)
-            @server, @broadcasting = server, broadcasting
-          end
-
-          def broadcast(message)
-            server.logger.info "[ActionCable] Broadcasting to #{broadcasting}: #{message}"
-            server.broadcasting_redis.publish broadcasting, message.to_json
-          end
+        def broadcaster
+          @broadcaster ||= ActionCable::Adapters::Broadcaster.new(config, logger)
         end
+
     end
   end
 end

@@ -2,6 +2,7 @@ module ActionCable
   module Server
     autoload :Base, 'action_cable/server/base'
     autoload :Broadcasting, 'action_cable/server/broadcasting'
+    autoload :Pubsub, 'action_cable/server/pubsub'
     autoload :Connections, 'action_cable/server/connections'
     autoload :Configuration, 'action_cable/server/configuration'
 

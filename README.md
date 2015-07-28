@@ -245,6 +245,36 @@ For a full list of all configuration options, see the `ActionCable::Server::Conf
 
 Also note that your server must provide at least the same number of database connections as you have workers. The default worker pool is set to 100, so that means you have to make at least that available. You can change that in `config/database.yml` through the `pool` attribute.
 
+## Security
+
+Websockets default implementation is vulnerable to [Cross-Site WebSocket Hijacking](https://www.christian-schneider.net/CrossSiteWebSocketHijacking.html)
+attacks. Action Cable has a protection mechanism that uses the CSRF token from Controllers.
+
+To activate the protection you'll need to add `protect_from_hijacking` to your `ActionCable::Connection::Base` subclass:
+
+```ruby
+module ApplicationCable
+  class Connection < ActionCable::Connection::Base
+    protect_from_hijacking
+  end
+end
+```
+
+and add the `csrf_meta_tags` to your layout
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Action Cable Examples</title>
+  <%= csrf_meta_tags %>
+  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track': true %>
+  <%= javascript_include_tag 'application', 'data-turbolinks-track': true %>
+</head>
+```
+
+Important: Action Cable needs to have access to the meta tags so make sure that the `csrf_meta_tags` is above the `javascript_link_tag` or the javascript / coffescript creating the cable is executed on a domready event.
+
+
 ## Starting the cable server
 
 As mentioned, the cable server(s) is separated from your normal application server. It's still a rack application, but it is its own rack

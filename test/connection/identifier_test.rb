@@ -9,7 +9,7 @@ class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
 
     public :process_internal_message
 
-    def connect
+    after_connect do
       self.current_user = User.new "lifo"
     end
   end

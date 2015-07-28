@@ -5,11 +5,11 @@ class ActionCable::Connection::BaseTest < ActiveSupport::TestCase
   class Connection < ActionCable::Connection::Base
     attr_reader :websocket, :heartbeat, :subscriptions, :message_buffer, :connected
 
-    def connect
+    after_connect do
       @connected = true
     end
 
-    def disconnect
+    after_disconnect do
       @connected = false
     end
   end

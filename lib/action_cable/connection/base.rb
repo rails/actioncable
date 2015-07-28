@@ -12,16 +12,16 @@ module ActionCable
     #   module ApplicationCable
     #     class Connection < ActionCable::Connection::Base
     #       identified_by :current_user
-    #   
-    #       def connect
+    #
+    #       after_connect do
     #         self.current_user = find_verified_user
     #         logger.add_tags current_user.name
     #       end
     #
-    #       def disconnect
+    #       after_disconnect do
     #         # Any cleanup work needed when the cable connection is cut.
     #       end
-    #   
+    #
     #       protected
     #         def find_verified_user
     #           if current_user = User.find_by_identity cookies.signed[:identity_id]
@@ -47,6 +47,8 @@ module ActionCable
       include Identification
       include InternalChannel
       include Authorization
+      include Callbacks
+      include HijackingProtection
 
       attr_reader :server, :env
       delegate :worker_pool, :pubsub, to: :server
@@ -75,14 +77,14 @@ module ActionCable
           websocket.on(:open)    { |event| send_async :on_open   }
           websocket.on(:message) { |event| on_message event.data }
           websocket.on(:close)   { |event| send_async :on_close  }
-          
+
           respond_to_successful_request
         else
           respond_to_invalid_request
         end
       end
 
-      # Data received over the cable is handled by this method. It's expected that everything inbound is encoded with JSON. 
+      # Data received over the cable is handled by this method. It's expected that everything inbound is encoded with JSON.
       # The data is routed to the proper channel that the connection has subscribed to.
       def receive(data_in_json)
         if websocket.alive?
@@ -130,6 +132,17 @@ module ActionCable
           request.cookie_jar
         end
 
+        # The session of the request that initiated the websocket connection. Useful for performing server-side validations.
+        def session
+          @session ||= begin
+            if defined?(Rails.application) && Rails.application
+              Rails.application.config.session_store.new(request, Rails.application.config.session_options).load_session(request.env).last
+            else
+              request.session
+            end
+          end
+        end
+
 
       private
         attr_reader :websocket
@@ -138,7 +151,8 @@ module ActionCable
         def on_open
           server.add_connection(self)
 
-          connect if respond_to?(:connect)
+          run_callbacks :connect
+
           subscribe_to_internal_channel
           heartbeat.start
 
@@ -161,7 +175,7 @@ module ActionCable
           unsubscribe_from_internal_channel
           heartbeat.stop
 
-          disconnect if respond_to?(:disconnect)
+          run_callbacks :disconnect
         end
 
 
@@ -177,7 +191,7 @@ module ActionCable
 
         # Tags are declared in the server but computed in the connection. This allows us per-connection tailored tags.
         def new_tagged_logger
-          TaggedLoggerProxy.new server.logger, 
+          TaggedLoggerProxy.new server.logger,
             tags: server.config.log_tags.map { |tag| tag.respond_to?(:call) ? tag.call(request) : tag.to_s.camelize }
         end
 

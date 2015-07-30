@@ -5,7 +5,7 @@ class ActionCable::Connection::AuthorizationTest < ActiveSupport::TestCase
   class Connection < ActionCable::Connection::Base
     attr_reader :websocket
 
-    def connect
+    after_connect do
       reject_unauthorized_connection
     end
   end

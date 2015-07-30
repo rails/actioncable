@@ -9,5 +9,7 @@ module ActionCable
     autoload :WebSocket, 'action_cable/connection/web_socket'
     autoload :Subscriptions, 'action_cable/connection/subscriptions'
     autoload :TaggedLoggerProxy, 'action_cable/connection/tagged_logger_proxy'
+    autoload :Callbacks, 'action_cable/connection/callbacks'
+    autoload :HijackingProtection, 'action_cable/connection/hijacking_protection'
   end
 end

@@ -1,3 +1,5 @@
+require 'abstract_controller'
+
 module ActionCable
   module Channel
     # The channel provides the basic structure of grouping behavior into logical units when communicating over the websocket connection.
@@ -64,7 +66,7 @@ module ActionCable
     #
     # Also note that in this example, current_user is available because it was marked as an identifying attribute on the connection.
     # All such identifiers will automatically create a delegation method of the same name on the channel instance.
-    class Base
+    class Base < AbstractController::Base
       include Callbacks
       include PeriodicTimers
       include Streams
@@ -77,41 +79,7 @@ module ActionCable
       attr_reader :params, :connection
       delegate :logger, to: :connection
 
-      class << self
-        # A list of method names that should be considered actions. This
-        # includes all public instance methods on a channel, less
-        # any internal methods (defined on Base), adding back in
-        # any methods that are internal, but still exist on the class
-        # itself.
-        #
-        # ==== Returns
-        # * <tt>Set</tt> - A set of all methods that should be considered actions.
-        def action_methods
-          @action_methods ||= begin
-            # All public instance methods of this class, including ancestors
-            methods = (public_instance_methods(true) -
-              # Except for public instance methods of Base and its ancestors
-              ActionCable::Channel::Base.public_instance_methods(true) +
-              # Be sure to include shadowed public instance methods of this class
-              public_instance_methods(false)).uniq.map(&:to_s)
-            methods.to_set
-          end
-        end
-
-        protected
-          # action_methods are cached and there is sometimes need to refresh
-          # them. ::clear_action_methods! allows you to do that, so next time
-          # you run action_methods, they will be recalculated
-          def clear_action_methods!
-            @action_methods = nil
-          end
-
-          # Refresh the cached action_methods when a new action_method is added.
-          def method_added(name)
-            super
-            clear_action_methods!
-          end
-      end
+      abstract!
 
       def initialize(connection, identifier, params = {})
         @connection = connection
@@ -127,12 +95,11 @@ module ActionCable
       # like #subscribed).
       def perform_action(data)
         action = extract_action(data)
+        process(action, data)
+      end
 
-        if processable_action?(action)
-          dispatch_action(action, data)
-        else
-          logger.error "Unable to process #{action_signature(action, data)}"
-        end
+      def action_missing(action, data)
+        logger.error "Unable to process #{action_signature(action, data)}"
       end
 
       # Called by the cable connection when its cut so the channel has a chance to cleanup with callbacks.
@@ -184,17 +151,13 @@ module ActionCable
           (data['action'].presence || :receive).to_sym
         end
 
-        def processable_action?(action)
-          self.class.action_methods.include?(action.to_s)
-        end
-
-        def dispatch_action(action, data)
+        def process_action(action, data)
           logger.info action_signature(action, data)
 
-          if method(action).arity == 1
-            public_send action, data
+          if method(action).arity == 0
+            send_action action
           else
-            public_send action
+            send_action action, data
           end
         end
 

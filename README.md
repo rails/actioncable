@@ -320,10 +320,14 @@ their connection and channel logic.
 
 ## License
 
-Action Cable is released under the MIT license:
+ActionCable is released under the [MIT License](MIT-LICENSE).
 
-* http://www.opensource.org/licenses/MIT
+## Contributing to ActionCable
 
+ActionCable is work of hundreds of contributors. You're encouraged to submit pull requests, propose
+features and discuss issues.
+
+See [CONTRIBUTING](CONTRIBUTING.md).
 
 ## Support
 

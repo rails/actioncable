@@ -1,4 +1,9 @@
 # Encapsulate the cable connection held by the consumer. This is an internal class not intended for direct user manipulation.
+Cable = if typeof window == 'object'
+  window.Cable
+else if typeof global == 'object'
+  global.Cable
+
 class Cable.Connection
   constructor: (@consumer) ->
     @open()

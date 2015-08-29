@@ -6,6 +6,11 @@
 #   App.appearance = App.cable.subscriptions.create "AppearanceChannel"
 #
 # For more details on how you'd configure an actual channel subscription, see Cable.Subscription.
+Cable = if typeof window == 'object'
+  window.Cable
+else if typeof global == 'object'
+  global.Cable
+
 class Cable.Subscriptions
   constructor: (@consumer) ->
     @subscriptions = []

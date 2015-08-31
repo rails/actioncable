@@ -1,0 +1,27 @@
+{
+  "name": "actioncable",
+  "version": "0.0.3",
+  "description": "Client for rails's actioncable",
+  "author": "",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rails/actioncable"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.config.js",
+    "prepublish": "npm run build",
+    "test": "mocha --compilers coffee:coffee-script/register test/javascripts",
+    "test-sprockets": "ruby test/sprockets/build.rb && mocha-phantomjs test/sprockets/runner.html"
+  },
+  "devDependencies": {
+    "chai": "^3.2.0",
+    "coffee-loader": "^0.7.2",
+    "coffee-script": "^1.9.3",
+    "mocha": "^2.2.5",
+    "mocha-phantomjs": "^3.6.0",
+    "phantomjs": "=1.9.7-15",
+    "webpack": "^1.12.0"
+  }
+}

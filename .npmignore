@@ -1,0 +1,10 @@
+lib/action_cable
+lib/*.rb
+test/
+actioncable.gemspec
+Rakefile
+Gemfile
+Gemfile.lock
+.ruby-version
+bootstrap.sh
+Vagrantfile

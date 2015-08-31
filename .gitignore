@@ -1,1 +1,13 @@
 test/tests.log
+
+node_modules/
+npm-debug.log
+
+dist/*
+!dist/.keep
+
+test/sprockets/cable.js
+
+.vagrant/
+bootstrap.sh
+Vagrantfile

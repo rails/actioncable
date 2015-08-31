@@ -27,6 +27,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rake'
   s.add_development_dependency 'puma'
   s.add_development_dependency 'mocha'
+  s.add_development_dependency 'sprockets'
 
   s.files = Dir['README', 'lib/**/*']
   s.has_rdoc = false

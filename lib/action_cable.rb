@@ -1,5 +1,5 @@
 require 'eventmachine'
-EM.epoll
+EM.epoll? ? EM.epoll : EM.kqueue
 
 require 'set'
 

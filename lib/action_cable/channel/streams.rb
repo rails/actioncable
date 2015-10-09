@@ -72,7 +72,8 @@ module ActionCable
         callback ||= default_stream_callback(broadcasting)
 
         streams << [ broadcasting, callback ]
-        pubsub.subscribe broadcasting, &callback
+        deferred = pubsub.subscribe broadcasting, &callback
+        deferred.callback { callback.call '"subscribed"' }
 
         logger.info "#{self.class.name} is streaming from #{broadcasting}"
       end

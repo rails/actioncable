@@ -1,0 +1,11 @@
+<% module_namespacing do -%>
+class <%= channel_name %> < ApplicationCable::Channel
+  def subscribed
+    #Performed when a websocket is opened
+  end
+
+  def unsubscribed
+    #Performed when a websocket is closed
+  end
+end
+<% end -%>

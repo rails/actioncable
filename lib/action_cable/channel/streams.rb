@@ -72,7 +72,13 @@ module ActionCable
         callback ||= default_stream_callback(broadcasting)
 
         streams << [ broadcasting, callback ]
-        EM.next_tick { pubsub.subscribe broadcasting, &callback }
+
+        received_at = Time.now
+        EM.next_tick do
+          pubsub.subscribe(broadcasting, &callback).callback do |reply|
+            logger.info "[PUBSUB] Subscribed to #{broadcasting} in #{(Time.now - received_at).to_f}s"
+          end
+        end
 
         logger.info "#{self.class.name} is streaming from #{broadcasting}"
       end

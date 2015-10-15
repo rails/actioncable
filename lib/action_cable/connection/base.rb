@@ -48,8 +48,8 @@ module ActionCable
       include InternalChannel
       include Authorization
 
-      attr_reader :server, :env
-      delegate :worker_pool, :pubsub, to: :server
+      attr_reader :server, :env, :pubsub
+      delegate :worker_pool, to: :server
 
       attr_reader :logger
 
@@ -61,6 +61,8 @@ module ActionCable
         @websocket      = ActionCable::Connection::WebSocket.new(env)
         @subscriptions  = ActionCable::Connection::Subscriptions.new(self)
         @message_buffer = ActionCable::Connection::MessageBuffer.new(self)
+
+        @pubsub = server.pubsub_pool.sample
 
         @started_at = Time.now
       end
@@ -121,7 +123,6 @@ module ActionCable
       def beat
         transmit({ identifier: '_ping', message: Time.now.to_i }.to_json)
       end
-
 
       protected
         # The request that initiated the websocket connection is available here. This gives access to the environment, cookies, etc.

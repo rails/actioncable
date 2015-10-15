@@ -19,3 +19,13 @@ ActiveSupport.test_order = :sorted
 Dir[File.dirname(__FILE__) + '/stubs/*.rb'].each {|file| require file }
 
 Celluloid.logger = Logger.new(StringIO.new)
+
+class ActionCable::TestCase < ActiveSupport::TestCase
+  def run_in_eventmachine
+    EM.run do
+      yield
+
+      EM::Timer.new(0.1) { EM.stop }
+    end
+  end
+end

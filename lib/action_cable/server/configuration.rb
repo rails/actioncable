@@ -4,7 +4,7 @@ module ActionCable
     # in a Rails config initializer.
     class Configuration
       attr_accessor :logger, :log_tags
-      attr_accessor :connection_class, :worker_pool_size
+      attr_accessor :connection_class, :worker_pool_size, :redis_pool_size
       attr_accessor :redis_path, :channels_path
       attr_accessor :disable_request_forgery_protection, :allowed_request_origins
 
@@ -14,6 +14,7 @@ module ActionCable
 
         @connection_class  = ApplicationCable::Connection
         @worker_pool_size  = 100
+        @redis_pool_size   = 20
 
         @redis_path    = Rails.root.join('config/redis/cable.yml')
         @channels_path = Rails.root.join('app/channels')

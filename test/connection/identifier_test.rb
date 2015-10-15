@@ -2,10 +2,11 @@ require 'test_helper'
 require 'stubs/test_server'
 require 'stubs/user'
 
-class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
+class ActionCable::Connection::IdentifierTest < ActionCable::TestCase
   class Connection < ActionCable::Connection::Base
     identified_by :current_user
     attr_reader :websocket
+    attr_writer :pubsub
 
     public :process_internal_message
 
@@ -17,35 +18,40 @@ class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
   setup do
     @server = TestServer.new
 
-    env = Rack::MockRequest.env_for "/test", 'HTTP_CONNECTION' => 'upgrade', 'HTTP_UPGRADE' => 'websocket'
-    @connection = Connection.new(@server, env)
+    @env = Rack::MockRequest.env_for "/test", 'HTTP_CONNECTION' => 'upgrade', 'HTTP_UPGRADE' => 'websocket'
+    @connection = Connection.new(@server, @env)
   end
 
   test "connection identifier" do
-    open_connection_with_stubbed_pubsub
+    open_connection
     assert_equal "User#lifo", @connection.connection_identifier
   end
 
   test "should subscribe to internal channel on open" do
-    pubsub = mock('pubsub')
-    pubsub.expects(:subscribe).with('action_cable/User#lifo')
-    @server.expects(:pubsub).returns(pubsub)
+    run_in_eventmachine do
+      @connection.pubsub = mock('pubsub')
 
-    open_connection
+      open_connection
+
+      # Use next tick to give eventmachine the chance to run pubsub.subscribe
+      EM.next_tick { @connection.pubsub.expects(:subscribe).with('action_cable/User#lifo') }
+    end
   end
 
   test "should unsubscribe from internal channel on close" do
-    open_connection_with_stubbed_pubsub
+    run_in_eventmachine do
+      @connection.pubsub = mock('pubsub')
 
-    pubsub = mock('pubsub')
-    pubsub.expects(:unsubscribe_proc).with('action_cable/User#lifo', kind_of(Proc))
-    @server.expects(:pubsub).returns(pubsub)
+      open_connection
+      close_connection
 
-    close_connection
+      # Use next tick to give eventmachine the chance to run pubsub.unsubscribe_proc
+      EM.next_tick { @connection.pubsub.expects(:unsubscribe_proc).with('action_cable/User#lifo') }
+    end
   end
 
   test "processing disconnect message" do
-    open_connection_with_stubbed_pubsub
+    open_connection
 
     @connection.websocket.expects(:close)
     message = { 'type' => 'disconnect' }.to_json
@@ -53,7 +59,7 @@ class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
   end
 
   test "processing invalid message" do
-    open_connection_with_stubbed_pubsub
+    open_connection
 
     @connection.websocket.expects(:close).never
     message = { 'type' => 'unknown' }.to_json
@@ -61,11 +67,6 @@ class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
   end
 
   protected
-    def open_connection_with_stubbed_pubsub
-      @server.stubs(:pubsub).returns(stub_everything('pubsub'))
-      open_connection
-    end
-
     def open_connection
       @connection.process
       @connection.send :on_open

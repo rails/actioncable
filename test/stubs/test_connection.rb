@@ -2,6 +2,7 @@ require 'stubs/user'
 
 class TestConnection
   attr_reader :identifiers, :logger, :current_user, :transmissions
+  attr_accessor :pubsub
 
   def initialize(user = User.new("lifo"))
     @identifiers = [ :current_user ]

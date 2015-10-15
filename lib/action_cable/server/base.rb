@@ -45,14 +45,18 @@ module ActionCable
         end
       end
 
-      # The redis pubsub adapter used for all streams/broadcasting.
-      def pubsub
-        @pubsub ||= redis.pubsub
+      # The redis pubsub pool used for all streams/broadcasting.
+      def pubsub_pool
+        @pubsub_pool ||= redis_pool.map { |redis| redis.pubsub }
       end
 
-      # The EventMachine Redis instance used by the pubsub adapter.
-      def redis
-        @redis ||= EM::Hiredis.connect(config.redis[:url]).tap do |redis|
+      # The EventMachine Redis pool used by the pubsub adapter.
+      def redis_pool
+        @redis_pool ||= Array.new(config.redis_pool_size) { initialize_redis }
+      end
+
+      def initialize_redis
+        EM::Hiredis.connect(config.redis[:url]).tap do |redis|
           redis.on(:reconnect_failed) do
             logger.info "[ActionCable] Redis reconnect failed."
             # logger.info "[ActionCable] Redis reconnected. Closing all the open connections."

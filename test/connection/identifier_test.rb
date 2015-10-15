@@ -12,6 +12,9 @@ class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
     def connect
       self.current_user = User.new "lifo"
     end
+
+    def send_async *args
+    end
   end
 
   setup do

@@ -3,7 +3,7 @@ require 'rails/generators/named_base'
 module Rails
   module Generators
     class ChannelGenerator < Rails::Generators::NamedBase
-      desc 'This generator creates a cable channel file in app/channels as well as the coffeescript file in app/assets/javascripts/channels'
+      desc 'This generator creates the Ruby and Coffeescript files to support Actioncable'
       source_root File.expand_path('../templates', __FILE__)
       check_class_collision suffix: 'Channel'
 
@@ -26,7 +26,7 @@ module Rails
           template 'index.coffee.erb', File.join('app/assets/javascripts/channels', "index.coffee")
         end
         unless File.read("app/assets/javascripts/application.js").include?("//= require channels")
-          inject_into_file "app/assets/javascripts/application.js", "//= require channels", :before => "//= require_tree .\n"
+          inject_into_file "app/assets/javascripts/application.js", "//= require channels\n", :before => "//= require_tree .\n"
         end
       end
 

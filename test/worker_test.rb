@@ -4,6 +4,8 @@ class WorkerTest < ActiveSupport::TestCase
   class Receiver
     attr_accessor :last_action
 
+    attr_reader :connection
+
     def run
       @last_action = :run
     end

@@ -19,14 +19,16 @@ class ActionCable::Channel::StreamTest < ActiveSupport::TestCase
   test "streaming start and stop" do
     @connection.expects(:pubsub).returns mock().tap { |m| m.expects(:subscribe).with("test_room_1") }
     channel = ChatChannel.new @connection, "{id: 1}", { id: 1 }
-
+    EM.run_deferred_callbacks
     @connection.expects(:pubsub).returns mock().tap { |m| m.expects(:unsubscribe_proc) }
     channel.unsubscribe_from_channel
+    EM.run_deferred_callbacks
   end
 
   test "stream_for" do
     @connection.expects(:pubsub).returns mock().tap { |m| m.expects(:subscribe).with("action_cable:channel:stream_test:chat:Room#1-Campfire") }
     channel = ChatChannel.new @connection, ""
     channel.stream_for Room.new(1)
+    EM.run_deferred_callbacks
   end
 end

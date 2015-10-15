@@ -12,6 +12,9 @@ class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
     def connect
       self.current_user = User.new "lifo"
     end
+
+    def send_async *args
+    end
   end
 
   setup do
@@ -32,16 +35,18 @@ class ActionCable::Connection::IdentifierTest < ActiveSupport::TestCase
     @server.expects(:pubsub).returns(pubsub)
 
     open_connection
+    EM.run_deferred_callbacks
   end
 
   test "should unsubscribe from internal channel on close" do
     open_connection_with_stubbed_pubsub
+    EM.run_deferred_callbacks
 
     pubsub = mock('pubsub')
     pubsub.expects(:unsubscribe_proc).with('action_cable/User#lifo', kind_of(Proc))
     @server.expects(:pubsub).returns(pubsub)
-
     close_connection
+    EM.run_deferred_callbacks
   end
 
   test "processing disconnect message" do

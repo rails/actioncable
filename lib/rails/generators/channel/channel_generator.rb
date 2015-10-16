@@ -25,9 +25,6 @@ module Rails
         unless File.exist?('app/assets/javascripts/channels')
           template 'index.coffee.erb', File.join('app/assets/javascripts/channels', "index.coffee")
         end
-        unless File.read("app/assets/javascripts/application.js").include?("//= require channels")
-          inject_into_file "app/assets/javascripts/application.js", "//= require channels\n", :before => "//= require_tree .\n"
-        end
       end
 
       def channel_name

@@ -2,8 +2,7 @@
 #= require_self
 #= require_tree .
 
-# Uncomment out this code for a basic implementation of actioncable
-# @App ?= {}
+@<%= application_name %> ?= {}
 
 # Define the location of your websockets here
-# App.cable = Cable.createConsumer 'ws://localhost:28080'
+<%= application_name %>.cable = Cable.createConsumer 'ws://localhost:28080'

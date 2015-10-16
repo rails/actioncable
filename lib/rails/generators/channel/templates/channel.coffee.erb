@@ -1,8 +1,8 @@
-# App.<%= channel_name %> = App.cable.subscriptions.create "<%= class_name %>",
+<%= application_name %>.<%= channel_name %> = App.cable.subscriptions.create "<%= class_name %>",
   # collection: -> $("[data-channel='<%= channel_name %>']")
 
-  # connected: ->
+  connected: ->
     # Called once the subscription has been successfully completed
 
-  # received: (data) ->
+  received: (data) ->
     # Called when data is received

@@ -3,7 +3,7 @@ require 'rails/generators/named_base'
 module Rails
   module Generators
     class ChannelGenerator < Rails::Generators::NamedBase
-      desc 'This generator creates the Ruby and Coffeescript files to support Actioncable'
+      desc 'This generator creates the Ruby and CoffeeScript files to support Action Cable'
       source_root File.expand_path('../templates', __FILE__)
       check_class_collision suffix: 'Channel'
 

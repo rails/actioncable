@@ -10,16 +10,16 @@ module ActionCable
 
       def create_install_files
         unless File.exist?('app/channels/application_cable/channel.rb')
-          template 'application_cable_channel.rb.erb', File.join('app/channels/application_cable', class_path, "channel.rb")
+          template 'application_cable_channel.rb.erb', File.join('app/channels/application_cable', class_path, 'channel.rb')
         end
         unless File.exist?('app/channels/application_cable/connection.rb')
-          template 'application_cable_connection.rb.erb', File.join('app/channels/application_cable', class_path, "connection.rb")
+          template 'application_cable_connection.rb.erb', File.join('app/channels/application_cable', class_path, 'connection.rb')
         end
         unless File.exist?('app/assets/javascripts/channels/index.coffee')
-          template 'index.coffee.erb', File.join('app/assets/javascripts/channels', "index.coffee")
+          template 'index.coffee.erb', File.join('app/assets/javascripts/channels', 'index.coffee')
         end
         unless File.exist?('config/redis/cable.yml')
-          template 'cable.yml.erb', File.join('config/redis', class_path, "cable.yml")
+          template 'cable.yml.erb', File.join('config/redis', class_path, 'cable.yml')
         end
       end
 

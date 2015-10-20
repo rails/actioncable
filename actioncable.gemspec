@@ -1,11 +1,11 @@
-$:.push File.expand_path("../lib", __FILE__)
+$:.unshift File.expand_path("../lib", __FILE__)
 require 'action_cable/version'
 
 Gem::Specification.new do |s|
   s.name        = 'actioncable'
   s.version     = ActionCable::VERSION
-  s.summary     = 'Websockets framework for Rails.'
-  s.description = 'Structure many real-time application concerns into channels over a single websockets connection.'
+  s.summary     = 'WebSocket framework for Rails.'
+  s.description = 'Structure many real-time application concerns into channels over a single WebSocket connection.'
   s.license     = 'MIT'
 
   s.author   = ['Pratik Naik', 'David Heinemeier Hansson']
@@ -28,7 +28,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'puma'
   s.add_development_dependency 'mocha'
 
-  s.files = Dir['README', 'lib/**/*']
+  s.files = Dir['README.md', 'lib/**/*']
   s.has_rdoc = false
 
   s.require_path = 'lib'

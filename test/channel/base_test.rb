@@ -23,6 +23,11 @@ class ActionCable::Channel::BaseTest < ActiveSupport::TestCase
     on_subscribe :toggle_subscribed
     on_unsubscribe :toggle_subscribed
 
+    def initialize(*)
+      @subscribed = false
+      super
+    end
+
     def subscribed
       @room = Room.new params[:id]
       @actions = []
@@ -134,4 +139,10 @@ class ActionCable::Channel::BaseTest < ActiveSupport::TestCase
     expected = ActiveSupport::JSON.encode "identifier" => "{id: 1}", "message" => { "data" => "latest" }
     assert_equal expected, @connection.last_transmission
   end
+
+  test "subscription confirmation" do
+    expected = ActiveSupport::JSON.encode "identifier" => "{id: 1}", "type" => "confirm_subscription"
+    assert_equal expected, @connection.last_transmission
+  end
+
 end

@@ -1,6 +1,8 @@
+require 'set'
+
 module ActionCable
   module Channel
-    # The channel provides the basic structure of grouping behavior into logical units when communicating over the websocket connection.
+    # The channel provides the basic structure of grouping behavior into logical units when communicating over the WebSocket connection.
     # You can think of a channel like a form of controller, but one that's capable of pushing content to the subscriber in addition to simply
     # responding to the subscriber's direct requests.
     #
@@ -71,6 +73,8 @@ module ActionCable
       include Naming
       include Broadcasting
 
+      SUBSCRIPTION_CONFIRMATION_INTERNAL_MESSAGE = 'confirm_subscription'.freeze
+
       on_subscribe   :subscribed
       on_unsubscribe :unsubscribed
 
@@ -118,6 +122,10 @@ module ActionCable
         @identifier = identifier
         @params     = params
 
+        # When a channel is streaming via redis pubsub, we want to delay the confirmation
+        # transmission until redis pubsub subscription is confirmed.
+        @defer_subscription_confirmation = false
+
         delegate_connection_identifiers
         subscribe_to_channel
       end
@@ -159,9 +167,22 @@ module ActionCable
         # the proper channel identifier marked as the recipient.
         def transmit(data, via: nil)
           logger.info "#{self.class.name} transmitting #{data.inspect}".tap { |m| m << " (via #{via})" if via }
-          connection.transmit({ identifier: @identifier, message: data }.to_json)
+          connection.transmit ActiveSupport::JSON.encode(identifier: @identifier, message: data)
         end
 
+
+      protected
+        def defer_subscription_confirmation!
+          @defer_subscription_confirmation = true
+        end
+
+        def defer_subscription_confirmation?
+          @defer_subscription_confirmation
+        end
+
+        def subscription_confirmation_sent?
+          @subscription_confirmation_sent
+        end
 
       private
         def delegate_connection_identifiers
@@ -175,6 +196,7 @@ module ActionCable
 
         def subscribe_to_channel
           run_subscribe_callbacks
+          transmit_subscription_confirmation unless defer_subscription_confirmation?
         end
 
 
@@ -211,6 +233,16 @@ module ActionCable
         def run_unsubscribe_callbacks
           self.class.on_unsubscribe_callbacks.each { |callback| send(callback) }
         end
+
+        def transmit_subscription_confirmation
+          unless subscription_confirmation_sent?
+            logger.info "#{self.class.name} is transmitting the subscription confirmation"
+            connection.transmit ActiveSupport::JSON.encode(identifier: @identifier, type: SUBSCRIPTION_CONFIRMATION_INTERNAL_MESSAGE)
+
+            @subscription_confirmation_sent = true
+          end
+        end
+
     end
   end
 end

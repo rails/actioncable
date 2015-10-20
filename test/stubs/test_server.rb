@@ -11,4 +11,7 @@ class TestServer
     @config = OpenStruct.new(log_tags: [])
     @pubsub_pool = []
   end
+
+  def send_async
+  end
 end

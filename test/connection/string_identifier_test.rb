@@ -25,7 +25,7 @@ class ActionCable::Connection::StringIdentifierTest < ActionCable::TestCase
   protected
     def open_connection_with_stubbed_pubsub
       @server = TestServer.new
-      @server.stubs(:pubsub).returns(stub_everything('pubsub'))
+      @server.stubs(:pubsub_pool).returns([ stub_everything('pubsub') ])
 
       open_connection
     end

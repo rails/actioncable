@@ -29,7 +29,7 @@ class ActionCable::Connection::IdentifierTest < ActionCable::TestCase
       pubsub.expects(:unsubscribe_proc).with('action_cable/User#lifo', kind_of(Proc))
 
       server = TestServer.new
-      server.stubs(:pubsub).returns(pubsub)
+      server.stubs(:pubsub_pool).returns([ pubsub ])
 
       open_connection server: server
       close_connection
@@ -59,7 +59,7 @@ class ActionCable::Connection::IdentifierTest < ActionCable::TestCase
   protected
     def open_connection_with_stubbed_pubsub
       server = TestServer.new
-      server.stubs(:pubsub).returns(stub_everything('pubsub'))
+      server.stubs(:pubsub_pool).returns([ stub_everything('pubsub') ])
 
       open_connection server: server
     end

@@ -56,6 +56,8 @@ class Cable.Subscriptions
     {identifier} = subscription
     if identifier is Cable.PING_IDENTIFIER
       @consumer.connection.isOpen()
+    else if identifier is Cable.CLOSE_IDENTIFIER
+      # skip
     else
       @consumer.send({command, identifier})
 

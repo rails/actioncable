@@ -143,7 +143,7 @@ module ActionCable
       # Called by the cable connection when its cut so the channel has a chance to cleanup with callbacks.
       # This method is not intended to be called directly by the user. Instead, overwrite the #unsubscribed callback.
       def unsubscribe_from_channel
-        _run_unsubscribe_callbacks { unsubscribed }
+        _unsubscribe_callbacks { unsubscribed }
       end
 
 
@@ -192,7 +192,7 @@ module ActionCable
 
 
         def subscribe_to_channel
-          _run_subscribe_callbacks { subscribed }
+          _subscribe_callbacks { subscribed }
           transmit_subscription_confirmation unless defer_subscription_confirmation?
         end
 

@@ -57,7 +57,7 @@ module ActionCable
 
           def valid_identifiers?(ids)
             keys = ids.keys
-            identifiers.all? { |id| keys.include?(id) }
+            identifiers.any? { |id| keys.include?(id) }
           end
       end
   end

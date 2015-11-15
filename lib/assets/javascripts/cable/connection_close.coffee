@@ -1,5 +1,5 @@
 class Cable.ConnectionClose
-  identifier: Cable.CLOSE_IDENTIFIER
+  identifier: Cable.INTERNAL.identifiers.close
 
   constructor: (@consumer) ->
     @consumer.subscriptions.add(this)

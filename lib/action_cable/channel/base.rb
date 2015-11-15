@@ -66,6 +66,22 @@ module ActionCable
     #
     # Also note that in this example, current_user is available because it was marked as an identifying attribute on the connection.
     # All such identifiers will automatically create a delegation method of the same name on the channel instance.
+    #
+    # == Rejecting subscription requests
+    #
+    # A channel can reject a subscription request in the #subscribed callback by invoking #reject!
+    #
+    # Example:
+    #
+    #   class ChatChannel < ApplicationCable::Channel
+    #     def subscribed
+    #       @room = Chat::Room[params[:room_number]]
+    #       reject unless current_user.can_access?(@room)
+    #     end
+    #   end
+    #
+    # In this example, the subscription will be rejected if the current_user does not have access to the chat room.
+    # On the client-side, Channel#rejected callback will get invoked when the server rejects the subscription request.
     class Base
       include Callbacks
       include PeriodicTimers
@@ -73,9 +89,7 @@ module ActionCable
       include Naming
       include Broadcasting
 
-      SUBSCRIPTION_CONFIRMATION_INTERNAL_MESSAGE = 'confirm_subscription'.freeze
-
-      attr_reader :params, :connection
+      attr_reader :params, :connection, :identifier
       delegate :logger, to: :connection
 
       class << self
@@ -143,7 +157,9 @@ module ActionCable
       # Called by the cable connection when its cut so the channel has a chance to cleanup with callbacks.
       # This method is not intended to be called directly by the user. Instead, overwrite the #unsubscribed callback.
       def unsubscribe_from_channel
-        _run_unsubscribe_callbacks { unsubscribed }
+        run_callbacks :unsubscribe do
+          unsubscribed
+        end
       end
 
 
@@ -167,8 +183,6 @@ module ActionCable
           connection.transmit ActiveSupport::JSON.encode(identifier: @identifier, message: data)
         end
 
-
-      protected
         def defer_subscription_confirmation!
           @defer_subscription_confirmation = true
         end
@@ -179,6 +193,14 @@ module ActionCable
 
         def subscription_confirmation_sent?
           @subscription_confirmation_sent
+        end
+
+        def reject
+          @reject_subscription = true
+        end
+
+        def subscription_rejected?
+          @reject_subscription
         end
 
       private
@@ -192,8 +214,15 @@ module ActionCable
 
 
         def subscribe_to_channel
-          _run_subscribe_callbacks { subscribed }
-          transmit_subscription_confirmation unless defer_subscription_confirmation?
+          run_callbacks :subscribe do
+            subscribed
+          end
+
+          if subscription_rejected?
+            reject_subscription
+          else
+            transmit_subscription_confirmation unless defer_subscription_confirmation?
+          end
         end
 
 
@@ -226,10 +255,19 @@ module ActionCable
         def transmit_subscription_confirmation
           unless subscription_confirmation_sent?
             logger.info "#{self.class.name} is transmitting the subscription confirmation"
-            connection.transmit ActiveSupport::JSON.encode(identifier: @identifier, type: SUBSCRIPTION_CONFIRMATION_INTERNAL_MESSAGE)
-
+            connection.transmit ActiveSupport::JSON.encode(identifier: @identifier, type: ActionCable::INTERNAL[:message_types][:confirmation])
             @subscription_confirmation_sent = true
           end
+        end
+
+        def reject_subscription
+          connection.subscriptions.remove_subscription self
+          transmit_subscription_rejection
+        end
+
+        def transmit_subscription_rejection
+          logger.info "#{self.class.name} is transmitting the subscription rejection"
+          connection.transmit ActiveSupport::JSON.encode(identifier: @identifier, type: ActionCable::INTERNAL[:message_types][:rejection])
         end
     end
   end

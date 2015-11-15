@@ -23,17 +23,26 @@ class Cable.Subscriptions
     @notify(subscription, "initialized")
     @sendCommand(subscription, "subscribe")
 
-  reload: ->
-    for subscription in @subscriptions
-      @sendCommand(subscription, "subscribe")
-
   remove: (subscription) ->
-    @subscriptions = (s for s in @subscriptions when s isnt subscription)
+    @forget(subscription)
+
     unless @findAll(subscription.identifier).length
       @sendCommand(subscription, "unsubscribe")
 
+  reject: (identifier) ->
+    for subscription in @findAll(identifier)
+      @forget(subscription)
+      @notify(subscription, "rejected")
+
+  forget: (subscription) ->
+    @subscriptions = (s for s in @subscriptions when s isnt subscription)
+
   findAll: (identifier) ->
     s for s in @subscriptions when s.identifier is identifier
+
+  reload: ->
+    for subscription in @subscriptions
+      @sendCommand(subscription, "subscribe")
 
   notifyAll: (callbackName, args...) ->
     for subscription in @subscriptions
@@ -48,16 +57,16 @@ class Cable.Subscriptions
     for subscription in subscriptions
       subscription[callbackName]?(args...)
 
-      if callbackName in ["initialized", "connected", "disconnected"]
+      if callbackName in ["initialized", "connected", "disconnected", "rejected"]
         {identifier} = subscription
         @record(notification: {identifier, callbackName, args})
 
   sendCommand: (subscription, command) ->
     {identifier} = subscription
-    if identifier is Cable.PING_IDENTIFIER
+    if identifier is Cable.INTERNAL.identifiers.ping
       @consumer.connection.isOpen()
-    else if identifier is Cable.CLOSE_IDENTIFIER
-      # skip
+    else if identifier is Cable.INTERNAL.identifiers.close
+      # no op
     else
       @consumer.send({command, identifier})
 

@@ -1,4 +1,7 @@
 # Encapsulate the cable connection held by the consumer. This is an internal class not intended for direct user manipulation.
+
+{message_types} = Cable.INTERNAL
+
 class Cable.Connection
   @reopenDelay: 500
 
@@ -54,12 +57,13 @@ class Cable.Connection
     message: (event) ->
       {identifier, message, type} = JSON.parse(event.data)
 
-      if type?
-        switch type
-          when Cable.INTERNAL_MESSAGES.SUBSCRIPTION_CONFIRMATION
-            @consumer.subscriptions.notify(identifier, "connected")
-      else
-        @consumer.subscriptions.notify(identifier, "received", message)
+      switch type
+        when message_types.confirmation
+          @consumer.subscriptions.notify(identifier, "connected")
+        when message_types.rejection
+          @consumer.subscriptions.reject(identifier)
+        else
+          @consumer.subscriptions.notify(identifier, "received", message)
 
     open: ->
       @disconnected = false

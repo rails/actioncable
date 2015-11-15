@@ -48,7 +48,7 @@ module ActionCable
       include InternalChannel
       include Authorization
 
-      attr_reader :server, :env
+      attr_reader :server, :env, :subscriptions
       delegate :worker_pool, :pubsub, to: :server
 
       attr_reader :logger
@@ -119,7 +119,7 @@ module ActionCable
       end
 
       def beat
-        transmit ActiveSupport::JSON.encode(identifier: '_ping', message: Time.now.to_i)
+        transmit ActiveSupport::JSON.encode(identifier: ActionCable::INTERNAL[:identifiers][:ping], message: Time.now.to_i)
       end
 
 
@@ -140,7 +140,7 @@ module ActionCable
 
       private
         attr_reader :websocket
-        attr_reader :subscriptions, :message_buffer
+        attr_reader :message_buffer
 
         def on_open
           connect if respond_to?(:connect)
@@ -151,7 +151,6 @@ module ActionCable
           server.add_connection(self)
         rescue ActionCable::Connection::Authorization::UnauthorizedError
           respond_to_invalid_request
-          close
         end
 
         def on_message(message)
@@ -186,6 +185,8 @@ module ActionCable
         end
 
         def respond_to_invalid_request
+          close if websocket.alive?
+
           logger.info finished_request_message
           [ 404, { 'Content-Type' => 'text/plain' }, [ 'Page not found' ] ]
         end

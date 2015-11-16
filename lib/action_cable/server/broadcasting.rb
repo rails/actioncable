@@ -31,11 +31,6 @@ module ActionCable
         Broadcaster.new(self, broadcasting)
       end
 
-      # The redis instance used for broadcasting. Not intended for direct user use.
-      def broadcasting_redis
-        @broadcasting_redis ||= Redis.new(config.redis)
-      end
-
       private
         class Broadcaster
           attr_reader :server, :broadcasting
@@ -46,7 +41,7 @@ module ActionCable
 
           def broadcast(message)
             server.logger.info "[ActionCable] Broadcasting to #{broadcasting}: #{message}"
-            server.broadcasting_redis.publish broadcasting, ActiveSupport::JSON.encode(message)
+            server.redis.publish broadcasting, ActiveSupport::JSON.encode(message)
           end
         end
     end

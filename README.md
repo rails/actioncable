@@ -381,6 +381,48 @@ Beware that currently the cable server will _not_ auto-reload any changes in the
 
 We'll get all this abstracted properly when the framework is integrated into Rails.
 
+## FAQ's
+
+Note that this will continue being updated as alpha progresses
+
+### Heroku Support
+
+If your production environment is in Heroku, setup should be fairly straight forward. In app & standalone setups both work, the only thing you'll need to make sure of is that you have the server that is running your WebSocket, to be on a multi-threaded server like Puma. Make sure you also have a Redis instance up and running with with Redis URL pointing to the ENV variable that is assigned to the database. There is a great step by step set up [here](http://www.thegreatcodeadventure.com/deploying-action-cable-to-heroku/) to follow through.
+
+### Heroku Custom Domain With CloudFlare
+
+Heroku Custom Domain + CloudFlare + WebSockets is a little more tricky and will unfortunately cost you a little money. Keep in mind this is if you want HTTPS requests, if you just have HTTP requests, then follow the following steps, but you shouldn't have to worry about buying an SSL certificate.
+
+- Please note that this method was only attempted with In-App setup and not Standalone. It should work, but was never tested, also note that setting it up with standalone on Heroku might incur charges.
+
+Unfortunately, CloudFlare only supports WebSockets on their Enterprise level ($5000+). You also can't use the the In-App config to force the WS connection, because again CF denies this connection.
+
+- I. To get this working, you will need to buy an SSL cert. You will need to configure the certificate to work with Heroku. They have great documentation to take you step by step through this process [here](https://devcenter.heroku.com/articles/ssl-endpoint) Once you are done setting that up, come back for the next step.
+
+- II. Next, go onto your CloudFlare DNS setup and create a new CNAME that points to the new `herokussl.com` url that you should have aquired on the previous step. Make sure that this new CNAME does not flow through CloudFlare's Proxy (Keep it as a grey cloud)
+
+- III. In your app code, you will need to share cookies cross-subdomain.
+  - a. Move the line of code in `config/initializers/session_store.rb` to each of your environment files `config/environments/*` and put it in the format of `config.session_store :cookie_store, key: '_app_name_session', domain: '.domain.com`. This will help to share your session cookie with the new CNAME so it won't try and redirect you to a user log in page.
+  - b. Then you will need to change your user_id cookie signed call to include your domain as follows: `cookies.signed[:user_id] = {value: current_user.id, domain: '.domain.com'} if current_user`. You may want to move that domain name to the environment level so you can have it work locally on localhost or Pow.
+    - Something along the lines of:
+
+    
+>        #config/environments/development.rb
+>
+>        config.my_domain_name = 'localhost'
+>
+
+>        #config/environments/production.rb
+>
+>        config.my_domain_name = '.domain.com'
+
+and then set your cookie with `cookies.signed[:user_id] = {value: current_user.id, domain: Rails.application.config.my_domain_name} if current_user`
+
+That should make ActionCable work remotely on Heroku if you have a custom domain with SSL on CloudFlare.
+
+Just make sure on your cookie set up, you include the dot before your domain name so the cookie will work across all subdomains.
+
+If you have any further issues with this, create an issue in this repo and tag @rushingfitness and I'll work on helping you set it up.
 
 ## Dependencies
 

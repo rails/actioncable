@@ -1,0 +1,8 @@
+#= require cable
+#= require_self
+#= require_tree .
+
+@<%= application_name %> ?= {}
+
+# Define the location of your websockets here
+<%= application_name %>.cable = Cable.createConsumer 'ws://localhost:28080'

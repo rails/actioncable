@@ -14,6 +14,10 @@ module ActionCable
         @logger   = Rails.logger
         @log_tags = []
 
+        unless defined? ApplicationCable::Connection
+          raise NameError, "ApplicationCable::Connection is not defined. Run 'rails generate action_cable:install' to set it up."
+        end
+
         @connection_class  = ApplicationCable::Connection
         @worker_pool_size  = 100
 
@@ -55,4 +59,3 @@ module ActionCable
     end
   end
 end
-

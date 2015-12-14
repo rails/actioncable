@@ -354,9 +354,9 @@ ActionCable.server.config.log_tags = [
 ]
 ```
 
-Your websocket url might change between environments. If you host your production server via https, you will need to use the wss scheme
+Your WebSocket URL might change between environments. If you host your production server via https, you will need to use the wss scheme
 for your ActionCable server, but development might remain http and use the ws scheme. You might use localhost in development and your
-domain in production. In any case, to vary the websocket url between environments, add the following configuration to each environment:
+domain in production. In any case, to vary the WebSocket URL between environments, add the following configuration to each environment:
 
 ```ruby
 config.action_cable.url = "ws://example.com:28080"

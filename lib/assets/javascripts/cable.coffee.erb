@@ -5,13 +5,13 @@
   INTERNAL: <%= ActionCable::INTERNAL.to_json %>
 
   createConsumer: (url = @getConfig("url")) ->
-    new Cable.Consumer webSocketURL(url)
+    new Cable.Consumer @webSocketURL(url)
 
   getConfig: (name) ->
     element = document.head.querySelector("meta[name='action-cable-#{name}']")
     element?.getAttribute("content")
 
-  webSocketURL = (url) ->
+  webSocketURL: (url) ->
     if url and not /^wss?:/i.test(url)
       a = document.createElement("a")
       a.href = url

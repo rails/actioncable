@@ -415,7 +415,7 @@ Example::Application.routes.draw do
 end
 ```
 
-You can use `App.cable.createConsumer('ws://' + window.location.host + '/websocket')` to connect to the cable server.
+You can use `App.cable.createConsumer('/websocket')` to connect to the cable server.
 
 For every instance of your server you create and for every worker your server spawns, you will also have a new instance of ActionCable, but the use of Redis keeps messages synced across connections.
 

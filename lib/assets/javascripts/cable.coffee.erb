@@ -5,17 +5,17 @@
   INTERNAL: <%= ActionCable::INTERNAL.to_json %>
 
   createConsumer: (url = @getConfig("url")) ->
-    new Cable.Consumer @webSocketURL(url)
+    new Cable.Consumer @createWebSocketURL(url)
 
   getConfig: (name) ->
     element = document.head.querySelector("meta[name='action-cable-#{name}']")
     element?.getAttribute("content")
 
-  webSocketURL: (url) ->
+  createWebSocketURL: (url) ->
     if url and not /^wss?:/i.test(url)
       a = document.createElement("a")
       a.href = url
-      # in internet explorer, the next line properly populates the protocol
+      # Fix populating Location properties in IE. Otherwise, protocol will be blank.
       a.href = a.href
       a.protocol = a.protocol.replace("http", "ws")
       a.href

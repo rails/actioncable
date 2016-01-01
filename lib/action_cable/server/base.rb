@@ -61,6 +61,16 @@ module ActionCable
             # @connections.map &:close
           end
         end
+      rescue RuntimeError
+        ensure_em
+        retry unless (tries -= 1).zero?
+      end
+
+      # Very Rarely EM might die so needs to have a thread established to turn it back on
+      def ensure_em
+        unless EventMachine.reactor_running? && EventMachine.reactor_thread.alive?
+          Thread.new { EventMachine.run }
+        end
       end
 
       # All the identifiers applied to the connection class associated with this server.

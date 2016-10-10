@@ -1,0 +1,6 @@
+@App ?= {}
+App.<%= channel_name %> = App.cable.subscriptions.create "<%= channel_class %>",
+  connected: ->
+    # Called once the subscription has been successfully completed
+  received: (data) ->
+    # Called when data is received
